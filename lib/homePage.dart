@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:algo_visualizer/models/bubbleSorter.dart';
 import 'package:flutter/material.dart';
 // ignore_for_file: avoid_print
 
@@ -11,30 +12,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<int> numbers = [3,38,5,44,15,36,26,27,2,46,4,19,47,50,48];
+  final bubbleSorter = BubbleSorter([3, 38, 5, 44, 15, 36, 26, 27, 2, 46, 4, 19, 47, 50, 48]);
+  List<int> get numbers => bubbleSorter.numbers;
+  List<int> _currentSelection = [];
 
-  void bubbleSort(){
-    bool didASwap = false;
-    do {
-      didASwap = false;
-      for (var i = 0; i < numbers.length-1; i++) {
-        final curNum = numbers[i];
-        final nextNum = numbers[i+1];
-        if(curNum>nextNum) 
-        {
-          swap(numbers,i,i+1);
-          didASwap = true;
-        }
-      }
-    } while (didASwap);
+  @override
+  void initState() {
+    super.initState();
+    bubbleSorter.currentSelectionStream.listen((event) {
+      setState(() {
+        _currentSelection = event;
+      });
+      print('Current selection: $_currentSelection');
+    });
   }
-
-  void swap(List<int> arr,int i1,int i2)
-  {
-    var t1 = arr[i1];
-    var t2 = arr[i2];
-    arr[i1] = t2;
-    arr[i2] = t1;
+  void bubbleSort() {
+    bubbleSorter.sortWithAnimation();
   }
 
   @override
@@ -46,73 +39,86 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            barsList(),
-            actionBtns()
-          ],
+          children: <Widget>[barsList(), actionBtns()],
         ),
       ),
     );
   }
 
-  Widget actionBtns()
-  {
+  Widget actionBtns() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ElevatedButton(onPressed: (){
-                  setState(() {
-                    numbers = [3,38,5,44,15,36,26,27,2,46,4,19,47,50,48];
-                  });
-                  print(numbers);
-                },child: Text('Reset'),),
-                SizedBox(width: 20,),
-        ElevatedButton(onPressed: (){
-                  bubbleSort();
-                  setState(() {});
-                  print(numbers);
-                },child: Text('bubble sort'),),
+        ElevatedButton(
+          onPressed: () {
+            bubbleSorter.reset();
+            setState(() {});
+            print(numbers);
+          },
+          child: Text('Reset'),
+        ),
+        SizedBox(
+          width: 20,
+        ),
+        ElevatedButton(
+          onPressed: () {
+            bubbleSort();
+            setState(() {});
+            print(numbers);
+          },
+          child: Text('Bubble sort'),
+        ),
       ],
     );
   }
 
-  Widget barsList()
-  {
+  Widget barsList() {
+
+    List<Widget> items = [];
+    for (var i = 0; i < numbers.length; i++) {
+      items.add(
+        Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                child: bar(numbers[i],_currentSelection.contains(i)),
+              )
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: numbers.map((e) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal:2.0),
-        child: bar(e),
-      )).toList(),);
+      children: items,
+    );
   }
 
-  Widget bar(int value)
-  {
-    if(value < 20)
-    {
+  Widget bar(int value, bool isHighlighted) {
+    if (value < 20) {
       return Column(
         children: [
-          Text('$value',style: TextStyle(color: Colors.black),),
+          Text(
+            '$value',
+            style: TextStyle(color: Colors.black),
+          ),
           Container(
             padding: EdgeInsets.only(bottom: 5),
             alignment: Alignment.bottomCenter,
             height: value.toDouble(),
-            color: Colors.black,
+            color: isHighlighted?Colors.blueAccent:Colors.black,
             width: 30,
           ),
         ],
       );
-    }
-    else
-    {
+    } else {
       return Container(
         padding: EdgeInsets.only(bottom: 5),
         alignment: Alignment.bottomCenter,
         height: value.toDouble(),
         color: Colors.black,
         width: 30,
-        child: Text('$value',style: TextStyle(color: Colors.white),),
+        child: Text(
+          '$value',
+          style: TextStyle(color: Colors.white),
+        ),
       );
     }
   }
