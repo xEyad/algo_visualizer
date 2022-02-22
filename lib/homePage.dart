@@ -1,4 +1,6 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, curly_braces_in_flow_control_structures
+
+import 'dart:async';
 
 import 'package:algo_visualizer/models/bubbleSorter.dart';
 import 'package:flutter/material.dart';
@@ -12,22 +14,37 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final bubbleSorter = BubbleSorter([3, 38, 5, 44, 15, 36, 26, 27, 2, 46, 4, 19, 47, 50, 48]);
+  final bubbleSorter = BubbleSorter([3, 38, 112, 74, 15, 36, 26, 27, 2, 86, 4, 19, 47, 50, 48]);
   List<int> get numbers => bubbleSorter.numbers;
   List<int> _currentSelection = [];
+  List<StreamSubscription> subscriptions = [];
 
   @override
   void initState() {
     super.initState();
-    bubbleSorter.currentSelectionStream.listen((event) {
+    final s1 = bubbleSorter.currentSelectionStream.listen((event) {
       setState(() {
         _currentSelection = event;
       });
       print('Current selection: $_currentSelection');
     });
+
+
+    subscriptions.addAll([s1]);
   }
+
+  @override
+  void dispose() {
+
+    for (var s in subscriptions) {
+      s.cancel();
+    }
+
+    super.dispose();
+  }
+
   void bubbleSort() {
-    bubbleSorter.sortWithAnimation();
+    bubbleSorter.startAnimation();
   }
 
   @override
@@ -66,22 +83,29 @@ class _MyHomePageState extends State<MyHomePage> {
             setState(() {});
             print(numbers);
           },
-          child: Text('Bubble sort'),
+          child: Text('Start Bubble sort'),
+        ),
+        SizedBox(
+          width: 20,
+        ),
+        ElevatedButton(
+          onPressed: () {
+            bubbleSorter.pauseAnimation();
+            setState(() {});
+          },
+          child: Text('Pause'),
         ),
       ],
     );
   }
 
   Widget barsList() {
-
     List<Widget> items = [];
     for (var i = 0; i < numbers.length; i++) {
-      items.add(
-        Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                child: bar(numbers[i],_currentSelection.contains(i)),
-              )
-      );
+      items.add(Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+        child: bar(numbers[i], _currentSelection.contains(i),i>=bubbleSorter.lastSortedIndex),
+      ));
     }
 
     return Row(
@@ -91,7 +115,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget bar(int value, bool isHighlighted) {
+  Widget bar(int value, bool isHighlighted,bool isSorted) {
+    Color barColor = Colors.black;
+    if(isHighlighted)
+      barColor = Colors.blueAccent;
+    else if(isSorted)
+      barColor = Colors.green;
+
     if (value < 20) {
       return Column(
         children: [
@@ -103,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: EdgeInsets.only(bottom: 5),
             alignment: Alignment.bottomCenter,
             height: value.toDouble(),
-            color: isHighlighted?Colors.blueAccent:Colors.black,
+            color: barColor,
             width: 30,
           ),
         ],
@@ -113,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: EdgeInsets.only(bottom: 5),
         alignment: Alignment.bottomCenter,
         height: value.toDouble(),
-        color: Colors.black,
+        color: barColor,
         width: 30,
         child: Text(
           '$value',

@@ -3,61 +3,94 @@
 import 'dart:async';
 
 
-class BubbleSorter
+class BubbleSorter 
 {
   BubbleSorter(this._numbers)
   :
-  _originalNumbersList = List.from(_numbers);
+  _originalNumbersList = List.from(_numbers),
+  _lastSortedIndex = _numbers.length;
   
-  int fps = 60;
   final List<int> _originalNumbersList;
   List<int> _numbers;
   List<int> get numbers => _numbers;
   final _currentSelectionStream = StreamController<List<int>>();
   Stream<List<int>> get currentSelectionStream =>  _currentSelectionStream.stream;
   
+  //animation Variables
+  int get _animationSpeedInMs => 100;
+  late Timer animationTimer;
+  int _curStepIndex = 0;
+  bool _isSwapHappenedInFullLoop = false;
+  int _stepsPerformed = 0;
+  int _lastSortedIndex;
+  int get lastSortedIndex => _lastSortedIndex;
+
   void startAnimation()
-  {    
-    sortWithAnimation();
+  {        
+    animationTimer = Timer.periodic(
+      Duration(milliseconds:_animationSpeedInMs ),(timer){
+
+        final bool didCompleteFullLoop = _curStepIndex == _lastSortedIndex-1 ;
+        if(didCompleteFullLoop)
+          _lastSortedIndex--;
+
+        if(!didCompleteFullLoop)
+          _doAnimationStep();
+        else if(_isSwapHappenedInFullLoop)
+        {
+          resetAnimationCounters();
+        }
+        else
+        {
+          _currentSelectionStream.add([]);
+          resetAnimationCounters();
+          animationTimer.cancel();
+          print('Animation completed');
+        }
+      }
+    );
+  }
+
+  void pauseAnimation()
+  {
+    animationTimer.cancel();
+    print('Animation paused');
   }
 
   void stopAnimation()
   {
-
+    animationTimer.cancel();
+    reset();
+    print('Animation stopped');
   }
 
   void reset()
   {
+    _lastSortedIndex = _numbers.length;
+    _currentSelectionStream.add([]);
     _numbers = List.from(_originalNumbersList);
+    resetAnimationCounters();
   }
 
-  void sortWithAnimation() async
+  void resetAnimationCounters()
   {
-    double deltaTime = 0;
-    double frameTime = fps/1000;
-    bool didASwap = false;
-    do {
-      //not enough time has passed between frames
-      if(deltaTime<frameTime)
-      {
-        didASwap = true;
-        continue;
-      }
-      else    
-        deltaTime = 0;  
-      
-      didASwap = false;
-      for (var i = 0; i < numbers.length-1; i++) {
-        final curNum = numbers[i];
-        final nextNum = numbers[i+1];
-        _currentSelectionStream.add([i,i+1]);
-        if(curNum>nextNum) 
-        {
-          _swap(numbers,i,i+1);
-          didASwap = true;
-        }
-      }
-    } while (didASwap);
+    _isSwapHappenedInFullLoop = false;
+    _curStepIndex = 0;
+  }
+
+  void _doAnimationStep()
+  {    
+    final curNum = numbers[_curStepIndex];
+    final nextNum = numbers[_curStepIndex+1];
+    _currentSelectionStream.add([_curStepIndex,_curStepIndex+1]);
+    if(curNum>nextNum) 
+    {
+      _currentSelectionStream.add([_curStepIndex,_curStepIndex+1]);
+      _swap(numbers,_curStepIndex,_curStepIndex+1);
+      _isSwapHappenedInFullLoop = true;
+    }
+    _curStepIndex++;
+    _stepsPerformed++;
   }
 
   void sortWithoutAnimation()
