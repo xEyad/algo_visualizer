@@ -1,4 +1,4 @@
-// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: curly_braces_in_flow_control_structures, avoid_print
 
 import 'dart:async';
 
@@ -14,10 +14,12 @@ class BubbleSorter
   List<int> _numbers;
   List<int> get numbers => _numbers;
   final _currentSelectionStream = StreamController<List<int>>();
+  final _willSwapSelectionStream = StreamController<bool>();
   Stream<List<int>> get currentSelectionStream =>  _currentSelectionStream.stream;
+  Stream<bool> get willSwapSelectionStream =>  _willSwapSelectionStream.stream;
   
   //animation Variables
-  int get animationStepSpeedInMs => 100;
+  int get animationStepSpeedInMs => 500;
   late Timer _animationTimer;
   int _curStepIndex = 0;
   bool _isSwapHappenedInFullLoop = false;
@@ -29,7 +31,7 @@ class BubbleSorter
   {        
     _animationTimer = Timer.periodic(
       Duration(milliseconds:animationStepSpeedInMs ),(timer){
-
+        print('starting bubble sort animation step');
         final bool didCompleteFullLoop = _curStepIndex == _lastSortedIndex-1 ;
         if(didCompleteFullLoop)
           _lastSortedIndex--;
@@ -85,7 +87,7 @@ class BubbleSorter
     _currentSelectionStream.add([_curStepIndex,_curStepIndex+1]);
     if(curNum>nextNum) 
     {
-      _currentSelectionStream.add([_curStepIndex,_curStepIndex+1]);
+      _willSwapSelectionStream.add(true);
       _swap(numbers,_curStepIndex,_curStepIndex+1);
       _isSwapHappenedInFullLoop = true;
     }

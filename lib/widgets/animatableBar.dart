@@ -6,7 +6,8 @@ class AnimatableBar extends StatefulWidget {
   
   AnimatableBar(this.controller,{Key? key,}) : super(key: key);
   final AnimatableBarController? controller;
-  
+  static const width = 30.0;
+
   @override
   State<AnimatableBar> createState() => _AnimatableBarState();
 }
@@ -19,17 +20,16 @@ class _AnimatableBarState extends State<AnimatableBar> {
 
   @override
   void initState() {
-    controller = widget.controller!;
-    
+    controller = widget.controller!;    
     controller.addListener(_onNotify);
     super.initState();
   }
 
-  _onNotify()
+  void _onNotify()
   {
     setState(() {});
   }
-  
+
   @override
   void dispose() {
     controller.removeListener(_onNotify);
@@ -59,7 +59,7 @@ class _AnimatableBarState extends State<AnimatableBar> {
             alignment: Alignment.bottomCenter,
             height: value.toDouble(),
             color: barColor,
-            width: 30,
+            width: AnimatableBar.width,
           ),
         ],
       );
@@ -69,7 +69,7 @@ class _AnimatableBarState extends State<AnimatableBar> {
         alignment: Alignment.bottomCenter,
         height: value.toDouble(),
         color: barColor,
-        width: 30,
+        width: AnimatableBar.width,
         child: Text(
           '$value',
           style: TextStyle(color: Colors.white),
@@ -77,6 +77,7 @@ class _AnimatableBarState extends State<AnimatableBar> {
       );
     }
   }
+
 }
 
 class AnimatableBarController extends ChangeNotifier 

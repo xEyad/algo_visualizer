@@ -17,14 +17,15 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   
   ///todo: disable start while its working
 
+  final barsSpacing = 4.0;
   final bubbleSorter =
-      BubbleSorter([3, 38, 112, 74, 15, 36, 26, 27, 2, 86, 4, 19, 47, 50, 48]);
+      BubbleSorter([112,3, 38,  74, 15, 36, 26, 27, 2, 86, 4, 19, 47, 50, 48]);
   List<int> get numbers => bubbleSorter.numbers;
   List<int> _currentSelection = [];
   List<StreamSubscription> subscriptions = [];
   late List<AnimatableBarController> animatableBarControllers;
   late Animation<double> animation;
-  late AnimationController controller; 
+  late AnimationController animationController; 
 
   AnimatableBarController getControllerMatchingIndex(int index)
   {
@@ -41,39 +42,65 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   }
   
   void initAnimationPreRequistes() {
-    controller = AnimationController(duration: Duration(milliseconds:bubbleSorter.animationStepSpeedInMs), vsync: this);
-    animation = Tween<double>(begin: 0, end: 300).animate(controller)
+    animationController = AnimationController(duration: Duration(milliseconds:(bubbleSorter.animationStepSpeedInMs*0.8).toInt()), vsync: this);
+    animationController.addStatusListener((status) { 
+      if(status== AnimationStatus.completed)
+      {
+        print('resetting bar animation controller');
+        animationController.reset();
+        setState(() {});
+      }
+    });
+    animation = Tween<double>(begin: 0, end: AnimatableBar.width + barsSpacing*2).animate(animationController)
     ..addListener(() {
-      setState(() {
-        // The state that has changed here is the animation object’s value.
-      });
+      if(_currentSelection.isEmpty) return;
+      print('starting animation for ${_currentSelection[0]} and ${_currentSelection[1]}');
+      final barCtrl1 = getControllerMatchingIndex(_currentSelection[1]);
+      final barCtrl2 = getControllerMatchingIndex(_currentSelection[0]);
+      barCtrl1.offset = Offset(animation.value, 0);
+      barCtrl2.offset = Offset(-animation.value , 0);
     }); 
   }
 
   void initListeners() {
     final s1 = bubbleSorter.currentSelectionStream.listen((event) {
-      animatableBarControllers.forEach((element) {
-        element.isHighlighted = false;
+      for (var barCtrl in animatableBarControllers) 
+      {
+        //reset bars
+        barCtrl.isHighlighted = false;
+        barCtrl.offset = Offset.zero;
         if(bubbleSorter.lastSortedIndex<numbers.length)
         {
           final lastSortedValue = numbers[bubbleSorter.lastSortedIndex];
-          if(element.value >= lastSortedValue)
-            element.isSorted = true;
+          if(barCtrl.value >= lastSortedValue)
+            barCtrl.isSorted = true;
         }        
-      });
+      }
       
+      //highlight selection
       _currentSelection = event;
       for (var selectedIdx in _currentSelection) {
         final ctrl = getControllerMatchingIndex(selectedIdx);
         ctrl.isHighlighted = true;
       }
 
-      setState(() {});
 
       print('Current selection: $_currentSelection');
     });
+
+    final s2 = bubbleSorter.willSwapSelectionStream.listen((willSwap) { 
+      if(willSwap)
+      {
+        print('starting bar animation controller');
+        animationController.forward();
+      }
+      else
+      {
+        setState(() {});
+      }
+    });
     
-    subscriptions.addAll([s1]);
+    subscriptions.addAll([s1,s2]);
   }
 
   @override
@@ -81,7 +108,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
     for (var s in subscriptions) {
       s.cancel();
     }
-    controller.dispose();
+    animationController.dispose();
     super.dispose();
   }
 
@@ -89,12 +116,13 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
     onPause();
     for (var element in animatableBarControllers) {element.reset();}
     bubbleSorter.reset();
+    animationController.reset();
     setState(() {});
     print(numbers);
   }
 
   void onPause() {
-    controller.stop();
+    animationController.stop();
     bubbleSorter.pauseAnimation();
   }
 
@@ -115,7 +143,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
     List<Widget> items = [];
     for (var i = 0; i < numbers.length; i++) {
       items.add(Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+        padding: EdgeInsets.symmetric(horizontal: barsSpacing),
         child: AnimatableBar( getControllerMatchingIndex(i),key: UniqueKey(),),
       ));
     }
@@ -126,7 +154,6 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
       children: items,
     );
   }
-
 
   Widget actionBtns() {
     return Row(
