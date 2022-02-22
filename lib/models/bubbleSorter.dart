@@ -17,8 +17,8 @@ class BubbleSorter
   Stream<List<int>> get currentSelectionStream =>  _currentSelectionStream.stream;
   
   //animation Variables
-  int get _animationSpeedInMs => 100;
-  late Timer animationTimer;
+  int get animationStepSpeedInMs => 100;
+  late Timer _animationTimer;
   int _curStepIndex = 0;
   bool _isSwapHappenedInFullLoop = false;
   int _stepsPerformed = 0;
@@ -27,8 +27,8 @@ class BubbleSorter
 
   void startAnimation()
   {        
-    animationTimer = Timer.periodic(
-      Duration(milliseconds:_animationSpeedInMs ),(timer){
+    _animationTimer = Timer.periodic(
+      Duration(milliseconds:animationStepSpeedInMs ),(timer){
 
         final bool didCompleteFullLoop = _curStepIndex == _lastSortedIndex-1 ;
         if(didCompleteFullLoop)
@@ -44,7 +44,7 @@ class BubbleSorter
         {
           _currentSelectionStream.add([]);
           resetAnimationCounters();
-          animationTimer.cancel();
+          _animationTimer.cancel();
           print('Animation completed');
         }
       }
@@ -53,13 +53,13 @@ class BubbleSorter
 
   void pauseAnimation()
   {
-    animationTimer.cancel();
+    _animationTimer.cancel();
     print('Animation paused');
   }
 
   void stopAnimation()
   {
-    animationTimer.cancel();
+    _animationTimer.cancel();
     reset();
     print('Animation stopped');
   }
