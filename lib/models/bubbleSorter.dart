@@ -21,6 +21,7 @@ class BubbleSorter
   Stream<bool> get willSwapSelectionStream =>  _willSwapSelectionStream.stream;
   SimpleAnimationStatus _animationStatus = SimpleAnimationStatus.stopped;
   SimpleAnimationStatus get animationStatus => _animationStatus;
+  List<SwapStep> swapSteps = [];
 
   //animation Variables
   int get animationStepSpeedInMs => 500;
@@ -80,6 +81,7 @@ class BubbleSorter
     _lastSortedIndex = _numbers.length;
     _currentSelectionStream.add([]);
     _numbers = List.from(_originalNumbersList);
+    swapSteps.clear();
     resetAnimationCounters();
   }
 
@@ -97,11 +99,17 @@ class BubbleSorter
     if(curNum>nextNum) 
     {
       _willSwapSelectionStream.add(true);
+      swapSteps.add(SwapStep(this,_curStepIndex));
       _swap(numbers,_curStepIndex,_curStepIndex+1);
       _isSwapHappenedInFullLoop = true;
     }
     _curStepIndex++;
     _stepsPerformed++;
+  }
+
+  void runRecordedSteps()
+  {
+    for (var step in swapSteps) {step.execute(); }
   }
 
   void sortWithoutAnimation()
@@ -114,6 +122,7 @@ class BubbleSorter
         final nextNum = numbers[i+1];
         if(curNum>nextNum) 
         {
+          swapSteps.add(SwapStep(this,i));
           _swap(numbers,i,i+1);
           didASwap = true;
         }
@@ -131,3 +140,27 @@ class BubbleSorter
 
 }
 
+abstract class SortStep
+{
+  final BubbleSorter sorter;
+  SortStep(this.sorter);
+  void execute();
+  void reverse();
+}
+
+class SwapStep extends SortStep
+{
+  final int curStepIndex;
+  SwapStep(BubbleSorter sorter,this.curStepIndex):super(sorter);
+
+  @override
+  void execute() {
+    sorter._swap(sorter._numbers, curStepIndex,curStepIndex+1);
+  }
+
+  @override
+  void reverse() {
+    // TODO: implement reverse
+  }
+  
+}
