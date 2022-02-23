@@ -138,7 +138,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[barsList(), actionBtns()],
+      children: <Widget>[barsList(),SizedBox(height: 30,), actionBtns()],
     );
   }
   
