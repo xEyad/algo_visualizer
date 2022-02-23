@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:algo_visualizer/models/bubbleSorter.dart';
+import 'package:algo_visualizer/models/simpleAnimationStatus.dart';
 import 'package:algo_visualizer/widgets/animatableBar.dart';
 import 'package:flutter/material.dart';
 
@@ -124,10 +125,12 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   void onPause() {
     animationController.stop();
     bubbleSorter.pauseAnimation();
+    setState(() {});
   }
 
   void onStartSort() {
     bubbleSorter.startAnimation();
+    setState(() {});
     print(numbers);
   }
 
@@ -160,21 +163,21 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton(
-          onPressed: onReset,
+          onPressed: bubbleSorter.animationStatus == SimpleAnimationStatus.animating? null : onReset,
           child: Text('Reset'),
         ),
         SizedBox(
           width: 20,
         ),
         ElevatedButton(
-          onPressed: onStartSort,
+          onPressed: bubbleSorter.animationStatus == SimpleAnimationStatus.animating? null : onStartSort,
           child: Text('Start Bubble sort'),
         ),
         SizedBox(
           width: 20,
         ),
         ElevatedButton(
-          onPressed: onPause,
+          onPressed: bubbleSorter.animationStatus == SimpleAnimationStatus.stopped? null :onPause,
           child: Text('Pause'),
         ),
       ],

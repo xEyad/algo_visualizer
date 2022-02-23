@@ -2,6 +2,8 @@
 
 import 'dart:async';
 
+import 'package:algo_visualizer/models/simpleAnimationStatus.dart';
+
 
 class BubbleSorter 
 {
@@ -17,7 +19,9 @@ class BubbleSorter
   final _willSwapSelectionStream = StreamController<bool>();
   Stream<List<int>> get currentSelectionStream =>  _currentSelectionStream.stream;
   Stream<bool> get willSwapSelectionStream =>  _willSwapSelectionStream.stream;
-  
+  SimpleAnimationStatus _animationStatus = SimpleAnimationStatus.stopped;
+  SimpleAnimationStatus get animationStatus => _animationStatus;
+
   //animation Variables
   int get animationStepSpeedInMs => 500;
   late Timer _animationTimer;
@@ -29,8 +33,10 @@ class BubbleSorter
 
   void startAnimation()
   {        
+    _animationStatus = SimpleAnimationStatus.animating;
     _animationTimer = Timer.periodic(
       Duration(milliseconds:animationStepSpeedInMs ),(timer){
+        _animationStatus = SimpleAnimationStatus.animating;
         print('starting bubble sort animation step');
         final bool didCompleteFullLoop = _curStepIndex == _lastSortedIndex-1 ;
         if(didCompleteFullLoop)
@@ -47,6 +53,7 @@ class BubbleSorter
           _currentSelectionStream.add([]);
           resetAnimationCounters();
           _animationTimer.cancel();
+          _animationStatus = SimpleAnimationStatus.stopped;
           print('Animation completed');
         }
       }
@@ -55,12 +62,14 @@ class BubbleSorter
 
   void pauseAnimation()
   {
+    _animationStatus = SimpleAnimationStatus.stopped;
     _animationTimer.cancel();
     print('Animation paused');
   }
 
   void stopAnimation()
   {
+    _animationStatus = SimpleAnimationStatus.stopped;
     _animationTimer.cancel();
     reset();
     print('Animation stopped');
@@ -121,3 +130,4 @@ class BubbleSorter
   }
 
 }
+
