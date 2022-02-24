@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:algo_visualizer/models/bubbleSorter.dart';
+import 'package:algo_visualizer/models/bubbleSorter/bubbleSorter.dart';
 import 'package:algo_visualizer/models/simpleAnimationStatus.dart';
 import 'package:algo_visualizer/widgets/animatableBar.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +16,6 @@ class BubbleSortPresenter extends StatefulWidget {
 
 class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTickerProviderStateMixin {
   
-  ///todo: disable start while its working
-
   final barsSpacing = 4.0;
   final bubbleSorter =
       BubbleSorter([112,3, 38,  74, 15, 36, 26, 27, 2, 86, 4, 19, 47, 50, 48]);
@@ -84,8 +82,6 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
         final ctrl = getControllerMatchingIndex(selectedIdx);
         ctrl.isHighlighted = true;
       }
-
-
       print('Current selection: $_currentSelection');
     });
 
