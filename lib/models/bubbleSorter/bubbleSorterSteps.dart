@@ -20,8 +20,8 @@ class _SwapStep extends _Step
 
   @override
   void reverse() {
-    // TODO: implement reverse
-  }
+    execute();
+ }
   
 }
 
@@ -37,7 +37,6 @@ class _AnimationHighlightSelectionStep extends _Step
 
   @override
   void reverse() {
-    // TODO: implement reverse
   }
   
 }
@@ -53,7 +52,6 @@ class _AnimationSwapStep extends _Step
 
   @override
   void reverse() {
-    // TODO: implement reverse
   }
   
 }
@@ -70,7 +68,6 @@ class _AnimationUpdateLastSortedIndexValueStep extends _Step
 
   @override
   void reverse() {
-    // TODO: implement reverse
   }
   
 }
