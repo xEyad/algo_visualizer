@@ -110,7 +110,7 @@ class AnimatableBarController extends ChangeNotifier
     notifyListeners();
   }
   
-  reset()
+  void reset()
   {
     _offset = Offset.zero;
     _isHighlighted = false;
