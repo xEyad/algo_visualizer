@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:algo_visualizer/models/simpleAnimationStatus.dart';
+import 'package:rxdart/rxdart.dart';
 
 
 class BubbleSorter 
@@ -16,51 +17,67 @@ class BubbleSorter
   List<int> _numbers;
   List<int> get numbers => _numbers;
   final _currentSelectionStream = StreamController<List<int>>();
-  final _willSwapSelectionStream = StreamController<bool>();
   Stream<List<int>> get currentSelectionStream =>  _currentSelectionStream.stream;
+
+  final _willSwapSelectionStream = StreamController<bool>();
   Stream<bool> get willSwapSelectionStream =>  _willSwapSelectionStream.stream;
-  SimpleAnimationStatus _animationStatus = SimpleAnimationStatus.stopped;
-  SimpleAnimationStatus get animationStatus => _animationStatus;
-  List<SwapStep> swapSteps = [];
+
+  final _animationStatusSubject = BehaviorSubject<SimpleAnimationStatus>.seeded(SimpleAnimationStatus.stopped);
+  set _animationStatus(SimpleAnimationStatus s) => _animationStatusSubject.add(s);
+  SimpleAnimationStatus get animationStatus => _animationStatusSubject.value;
+  Stream<SimpleAnimationStatus> get animationStatusStream => _animationStatusSubject.stream.asBroadcastStream();
+  
+  List<_Step> swapSteps = [];
 
   //animation Variables
   int get animationStepSpeedInMs => 500;
   late Timer _animationTimer;
   int _curStepIndex = 0;
-  bool _isSwapHappenedInFullLoop = false;
-  int _stepsPerformed = 0;
   int _lastSortedIndex;
   int get lastSortedIndex => _lastSortedIndex;
 
   void startAnimation()
   {        
+    if(swapSteps.isEmpty)
+    {
+      _lastSortedIndex = _numbers.length;
+      sortWithoutAnimation();
+      _numbers = List.from(_originalNumbersList);      
+    }
+
     _animationStatus = SimpleAnimationStatus.animating;
     _animationTimer = Timer.periodic(
       Duration(milliseconds:animationStepSpeedInMs ),(timer){
-        _animationStatus = SimpleAnimationStatus.animating;
         print('starting bubble sort animation step');
-        final bool didCompleteFullLoop = _curStepIndex == _lastSortedIndex-1 ;
-        if(didCompleteFullLoop)
-          _lastSortedIndex--;
-
-        if(!didCompleteFullLoop)
-          _doAnimationStep();
-        else if(_isSwapHappenedInFullLoop)
+        if(_curStepIndex == swapSteps.length)
         {
-          resetAnimationCounters();
-        }
-        else
-        {
-          _currentSelectionStream.add([]);
-          resetAnimationCounters();
           _animationTimer.cancel();
           _animationStatus = SimpleAnimationStatus.stopped;
+          _currentSelectionStream.add([]);          
           print('Animation completed');
+          return;
         }
+
+        final curStep = swapSteps[_curStepIndex];
+        _runNextStep();
+
+        if( curStep is _AnimationSwapStep )
+          _runNextStep();
+
+        if(curStep is _AnimationUpdateLastSortedIndexValueStep)
+          _runNextStep();
+
       }
     );
   }
 
+  void _runNextStep()
+  {
+    final step = swapSteps[_curStepIndex];
+    step.execute();
+    _curStepIndex++;
+  }
+  
   void pauseAnimation()
   {
     _animationStatus = SimpleAnimationStatus.stopped;
@@ -82,29 +99,6 @@ class BubbleSorter
     _currentSelectionStream.add([]);
     _numbers = List.from(_originalNumbersList);
     swapSteps.clear();
-    resetAnimationCounters();
-  }
-
-  void resetAnimationCounters()
-  {
-    _isSwapHappenedInFullLoop = false;
-    _curStepIndex = 0;
-  }
-
-  void _doAnimationStep()
-  {    
-    final curNum = numbers[_curStepIndex];
-    final nextNum = numbers[_curStepIndex+1];
-    _currentSelectionStream.add([_curStepIndex,_curStepIndex+1]);
-    if(curNum>nextNum) 
-    {
-      _willSwapSelectionStream.add(true);
-      swapSteps.add(SwapStep(this,_curStepIndex));
-      _swap(numbers,_curStepIndex,_curStepIndex+1);
-      _isSwapHappenedInFullLoop = true;
-    }
-    _curStepIndex++;
-    _stepsPerformed++;
   }
 
   void runRecordedSteps()
@@ -114,19 +108,25 @@ class BubbleSorter
 
   void sortWithoutAnimation()
   {
+          
     bool didASwap = false;
     do {
+      swapSteps.add(_AnimationUpdateLastSortedIndexValueStep(this,_lastSortedIndex));
       didASwap = false;
-      for (var i = 0; i < numbers.length-1; i++) {
+      for (var i = 0; i < _lastSortedIndex-1; i++) 
+      {
         final curNum = numbers[i];
         final nextNum = numbers[i+1];
+        swapSteps.add(_AnimationHighlightSelectionStep(this,i));
         if(curNum>nextNum) 
         {
-          swapSteps.add(SwapStep(this,i));
+          swapSteps.add(_AnimationSwapStep(this));
+          swapSteps.add(_SwapStep(this,i));
           _swap(numbers,i,i+1);
           didASwap = true;
         }
       }
+      _lastSortedIndex--;
     } while (didASwap);
   }
 
@@ -140,18 +140,18 @@ class BubbleSorter
 
 }
 
-abstract class SortStep
+abstract class _Step
 {
   final BubbleSorter sorter;
-  SortStep(this.sorter);
+  _Step(this.sorter);
   void execute();
   void reverse();
 }
 
-class SwapStep extends SortStep
+class _SwapStep extends _Step
 {
   final int curStepIndex;
-  SwapStep(BubbleSorter sorter,this.curStepIndex):super(sorter);
+  _SwapStep(BubbleSorter sorter,this.curStepIndex):super(sorter);
 
   @override
   void execute() {
@@ -164,3 +164,54 @@ class SwapStep extends SortStep
   }
   
 }
+
+class _AnimationHighlightSelectionStep extends _Step
+{
+  final int curStepIndex;
+  _AnimationHighlightSelectionStep(BubbleSorter sorter,this.curStepIndex):super(sorter);
+
+  @override
+  void execute() {
+    sorter._currentSelectionStream.add([curStepIndex,curStepIndex+1]);
+  }
+
+  @override
+  void reverse() {
+    // TODO: implement reverse
+  }
+  
+}
+
+class _AnimationSwapStep extends _Step
+{
+  _AnimationSwapStep(BubbleSorter sorter):super(sorter);
+
+  @override
+  void execute() {
+    sorter._willSwapSelectionStream.add(true);
+  }
+
+  @override
+  void reverse() {
+    // TODO: implement reverse
+  }
+  
+}
+
+class _AnimationUpdateLastSortedIndexValueStep extends _Step
+{
+  final int lastSortedIndex;
+  _AnimationUpdateLastSortedIndexValueStep(BubbleSorter sorter,this.lastSortedIndex):super(sorter);
+
+  @override
+  void execute() {
+    sorter._lastSortedIndex = lastSortedIndex;
+  }
+
+  @override
+  void reverse() {
+    // TODO: implement reverse
+  }
+  
+}
+

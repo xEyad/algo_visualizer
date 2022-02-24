@@ -100,8 +100,12 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
         setState(() {});
       }
     });
+
+    final s3 = bubbleSorter.animationStatusStream.listen((event) { 
+      setState(() {});
+    });
     
-    subscriptions.addAll([s1,s2]);
+    subscriptions.addAll([s1,s2,s3]);
   }
 
   @override
