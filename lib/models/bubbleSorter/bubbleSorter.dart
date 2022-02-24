@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:algo_visualizer/models/simpleAnimationStatus.dart';
 import 'package:rxdart/rxdart.dart';
 
-part '_bubbleSorterSteps.dart';
+part 'bubbleSorterSteps.dart';
 
 class BubbleSorter 
 {
@@ -33,7 +33,7 @@ class BubbleSorter
 
   //animation Variables
   int get animationStepSpeedInMs => 500;
-  late Timer _animationTimer;
+  Timer? _animationTimer;
   int _curStepIndex = 0;
   int _lastSortedIndex;
   int get lastSortedIndex => _lastSortedIndex;
@@ -53,7 +53,7 @@ class BubbleSorter
         print('starting bubble sort animation step');
         if(_curStepIndex == swapSteps.length)
         {
-          _animationTimer.cancel();
+          _animationTimer?.cancel();
           _animationStatus = SimpleAnimationStatus.stopped;
           _currentSelectionStream.add([]);          
           print('Animation completed');
@@ -83,14 +83,14 @@ class BubbleSorter
   void pauseAnimation()
   {
     _animationStatus = SimpleAnimationStatus.stopped;
-    _animationTimer.cancel();
+    _animationTimer?.cancel();
     print('Animation paused');
   }
 
   void stopAnimation()
   {
     _animationStatus = SimpleAnimationStatus.stopped;
-    _animationTimer.cancel();
+    _animationTimer?.cancel();
     reset();
     print('Animation stopped');
   }
@@ -106,6 +106,17 @@ class BubbleSorter
   void runRecordedSteps()
   {
     for (var step in swapSteps) {step.execute(); }
+  }
+
+  void undoAllSteps()
+  {
+    if(swapSteps.isEmpty)
+      return;
+    for (var i = swapSteps.length-1; i >= 0 ; i--) {
+      final curStep = swapSteps[i];
+      if(curStep is _SwapStep)
+        curStep.reverse();
+    }
   }
 
   void sortWithoutAnimation()
