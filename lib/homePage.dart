@@ -19,7 +19,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text("Eyad's Algorithim visualizer"),
         actions: [FlatButton(child: Text("Go to Github",style: TextStyle(color: Colors.white),),onPressed: (){
-          launch('https://xeyad.github.io/algo_visualizer/');
+          launch('https://github.com/xEyad/algo_visualizer');
         },)],
       ),
       body: Center(

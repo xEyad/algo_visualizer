@@ -3,7 +3,7 @@
 # Building for web
 1. flutter build web --release --base-href /algo_visualizer/ 
 1. copy contents of build/web to docs/
-1. copy your index.html and rename it to 404.html
+1. duplicate your index.html and rename it to 404.html
 1. git push
 
 # references
