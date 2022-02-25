@@ -2,6 +2,7 @@
 
 library bubble_sorter;
 import 'dart:async';
+import 'dart:math';
 
 import 'package:algo_visualizer/models/simpleAnimationStatus.dart';
 import 'package:rxdart/rxdart.dart';
@@ -29,7 +30,8 @@ class BubbleSorter
   SimpleAnimationStatus get animationStatus => _animationStatusSubject.value;
   Stream<SimpleAnimationStatus> get animationStatusStream => _animationStatusSubject.stream.asBroadcastStream();
   
-  List<_Step> swapSteps = [];
+  List<_Step> _swapSteps = [];
+  int get swapStepsNumber => _swapSteps.isEmpty?0: _swapSteps.whereType<_SwapStep>().length-1;
 
   //animation Variables
   int get animationStepSpeedInMs => 500;
@@ -40,7 +42,7 @@ class BubbleSorter
 
   void startAnimation()
   {        
-    if(swapSteps.isEmpty)
+    if(_swapSteps.isEmpty)
     {
       _lastSortedIndex = _numbers.length;
       sortWithoutAnimation();
@@ -51,7 +53,7 @@ class BubbleSorter
     _animationTimer = Timer.periodic(
       Duration(milliseconds:animationStepSpeedInMs ),(timer){
         print('starting bubble sort animation step');
-        if(_curStepIndex == swapSteps.length)
+        if(_curStepIndex == _swapSteps.length)
         {
           _animationTimer?.cancel();
           _animationStatus = SimpleAnimationStatus.stopped;
@@ -60,7 +62,7 @@ class BubbleSorter
           return;
         }
 
-        final curStep = swapSteps[_curStepIndex];
+        final curStep = _swapSteps[_curStepIndex];
         _runNextStep();
 
         if( curStep is _AnimationSwapStep )
@@ -75,7 +77,7 @@ class BubbleSorter
 
   void _runNextStep()
   {
-    final step = swapSteps[_curStepIndex];
+    final step = _swapSteps[_curStepIndex];
     step.execute();
     _curStepIndex++;
   }
@@ -100,47 +102,78 @@ class BubbleSorter
     _lastSortedIndex = _numbers.length;
     _currentSelectionStream.add([]);
     _numbers = List.from(_originalNumbersList);
-    swapSteps.clear();
+    _swapSteps.clear();
   }
 
   void runRecordedSteps()
   {
-    for (var step in swapSteps) {step.execute(); }
+    for (var step in _swapSteps) {step.execute(); }
   }
 
   void undoAllSteps()
   {
-    if(swapSteps.isEmpty)
+    if(_swapSteps.isEmpty)
       return;
-    for (var i = swapSteps.length-1; i >= 0 ; i--) {
-      final curStep = swapSteps[i];
+    for (var i = _swapSteps.length-1; i >= 0 ; i--) {
+      final curStep = _swapSteps[i];
       if(curStep is _SwapStep)
         curStep.reverse();
     }
+    _curStepIndex = 0;
+  }
+
+  void goToStep(int stepIndex)
+  {
+    if(stepIndex > swapStepsNumber || stepIndex < 0)
+    {
+      print('Error, step must be in range [0,$swapStepsNumber]');
+      return;
+    }
+
+    final steps = _swapSteps.whereType<_SwapStep>().toList();
+    if(_curStepIndex<stepIndex)
+    {
+      for (var i = _curStepIndex+1; i <= stepIndex; i++) {
+        final curStep = steps[i];
+        curStep.execute();        
+      }
+    }
+    else if(_curStepIndex>stepIndex)
+    {
+      for (var i = _curStepIndex; i > stepIndex; i--) {
+        final curStep = steps[i];
+        curStep.reverse();        
+      }
+    }
+    else
+    {
+      //nothing
+    }
+    _curStepIndex = stepIndex;
   }
 
   void sortWithoutAnimation()
-  {
-          
+  {          
     bool didASwap = false;
     do {
-      swapSteps.add(_AnimationUpdateLastSortedIndexValueStep(this,_lastSortedIndex));
+      _swapSteps.add(_AnimationUpdateLastSortedIndexValueStep(this,_lastSortedIndex));
       didASwap = false;
       for (var i = 0; i < _lastSortedIndex-1; i++) 
       {
         final curNum = numbers[i];
         final nextNum = numbers[i+1];
-        swapSteps.add(_AnimationHighlightSelectionStep(this,i));
+        _swapSteps.add(_AnimationHighlightSelectionStep(this,i));
         if(curNum>nextNum) 
         {
-          swapSteps.add(_AnimationSwapStep(this));
-          swapSteps.add(_SwapStep(this,i));
+          _swapSteps.add(_AnimationSwapStep(this));
+          _swapSteps.add(_SwapStep(this,i));
           _swap(numbers,i,i+1);
           didASwap = true;
         }
       }
       _lastSortedIndex--;
     } while (didASwap);
+    _curStepIndex = swapStepsNumber;
   }
 
   void _swap(List<int> arr,int i1,int i2)

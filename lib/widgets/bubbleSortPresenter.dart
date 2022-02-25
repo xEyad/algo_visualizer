@@ -24,7 +24,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   late List<AnimatableBarController> animatableBarControllers;
   late Animation<double> animation;
   late AnimationController animationController; 
-
+  int? curSelectedStep;
   AnimatableBarController getControllerMatchingIndex(int index)
   {
     return animatableBarControllers.firstWhere((element) => element.value ==  numbers[index]);
@@ -128,19 +128,25 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   }
 
   void onStartSort() {
-    // bubbleSorter.sortWithoutAnimation();
-    // setState(() {});
-    // return;
+    bubbleSorter.sortWithoutAnimation();
+    setState(() {});
+    return;
     bubbleSorter.startAnimation();
     setState(() {});
     print(numbers);
+  }
+
+  void onStepSelected(int? stepNum)
+  {
+    bubbleSorter.goToStep(stepNum!);
+    setState(() {curSelectedStep=stepNum;});
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[barsList(),SizedBox(height: 30,), actionBtns()],
+      children: <Widget>[barsList(),SizedBox(height: 30,), actionBtns(),],
     );
   }
   
@@ -171,6 +177,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
         SizedBox(
           width: 20,
         ),
+        goToStepBtn(),
         // ElevatedButton(
         //   onPressed: (){
         //     bubbleSorter.reset();
@@ -178,9 +185,9 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
         //   },
         //   child: Text('Super Reset'),
         // ),
-        // SizedBox(
-        //   width: 20,
-        // ),
+        SizedBox(
+          width: 20,
+        ),
         ElevatedButton(
           onPressed: bubbleSorter.animationStatus == SimpleAnimationStatus.animating? null : onStartSort,
           child: Text('Start Bubble sort'),
@@ -196,8 +203,12 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
     );
   }
 
-  // Widget goToStep()
-  // {
-  //   return DropdownButton(items: items, onChanged: onChanged)
-  // }
+  Widget goToStepBtn()
+  {
+    return DropdownButton(
+      value: curSelectedStep,
+      items: List.generate(bubbleSorter.swapStepsNumber, (index) => DropdownMenuItem(child: Text('${index}'),value: index,)), 
+      onChanged: onStepSelected
+    );
+  }
 }
