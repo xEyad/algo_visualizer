@@ -129,10 +129,6 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   }
 
   void onStartSort() {
-    // bubbleSorter.sortWithoutAnimation();
-    // curSelectedStep = bubbleSorter.swapStepsNumber;
-    // setState(() {});
-    // return;
     bubbleSorter.startAnimation();
     setState(() {});
     print(numbers);
@@ -140,6 +136,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
 
   void onStepSelected(int? stepNum)
   {
+    for (var element in animatableBarControllers) {element.reset();}
     bubbleSorter.goToStep(stepNum!);
     setState(() {});
   }
