@@ -49,6 +49,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
         setState(() {});
       }
     });
+    
     animation = Tween<double>(begin: 0, end: AnimatableBar.width + barsSpacing*2).animate(animationController)
     ..addListener(() {
       if(_currentSelection.isEmpty) return;
@@ -129,10 +130,10 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   }
 
   void onStartSort() {
-    bubbleSorter.sortWithoutAnimation();
-    curSelectedStep = bubbleSorter.swapStepsNumber;
-    setState(() {});
-    return;
+    // bubbleSorter.sortWithoutAnimation();
+    // curSelectedStep = bubbleSorter.swapStepsNumber;
+    // setState(() {});
+    // return;
     bubbleSorter.startAnimation();
     setState(() {});
     print(numbers);
