@@ -32526,7 +32526,7 @@ A.Hs.prototype={
 M(a,b){var s=null,r=A.lB("Eyad's Algorithim visualizer",s),q=A.a([new A.Aq(new A.a0x(),s,s,s,s,s,s,s,s,s,s,s,s,s,A.lB("Go to Github",A.lF(s,s,B.j,s,s,s,s,s,s,s,s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s)),s,s,s,B.D,s,!1,s,s,s,s)],t.E)
 return new A.ul(new A.qe(r,q,new A.Ib(s,s,1/0,56),s),A.My(new A.qv(s),s,s),s)}}
 A.a0x.prototype={
-$0(){A.a3D("https://xeyad.github.io/algo_visualizer/")},
+$0(){A.a3D("https://github.com/xEyad/algo_visualizer")},
 $S:0}
 A.BF.prototype={
 M(a,b){return new A.t5(new A.tl(null),"Eyad's Algorithim visualizer",A.a9F(null,B.q_),!1,null)}}
