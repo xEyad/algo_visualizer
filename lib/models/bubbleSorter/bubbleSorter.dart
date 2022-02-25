@@ -53,10 +53,6 @@ class BubbleSorter
       _curSwapStepIndex = -1;
       _numbers = List.from(_originalNumbersList);      
     }
-    else
-    {
-      goToStep(_curSwapStepIndex);
-    }
 
     _animationStatus = SimpleAnimationStatus.animating;
     _animationTimer = Timer.periodic(
@@ -133,18 +129,30 @@ class BubbleSorter
     }
 
     final steps = _sorterSteps.whereType<_SwapStep>().toList();
-    if(_curSwapStepIndex<stepIndex)
+    if(curSwapStepIndex<stepIndex)
     {
-      for (var i = _curSwapStepIndex; i < stepIndex; i++) {
+      for (var i = curSwapStepIndex; i < stepIndex; i++) {
         final curStep = steps[i];
         curStep.execute();        
-      }
+        print('executed step $i ') ;
+      }   
+      if(stepIndex==swapStepsNumber)
+      {
+        steps.last.execute();
+        print('executed step $stepIndex ');
+      } 
     }
-    else if(_curSwapStepIndex>stepIndex)
+    else if(curSwapStepIndex>stepIndex)
     {
-      for (var i = _curSwapStepIndex-1; i >= stepIndex; i--) {
+      if(curSwapStepIndex==swapStepsNumber)
+      {
+        steps.last.reverse();
+        print('reversed step $curSwapStepIndex ');
+      }
+      for (var i = curSwapStepIndex-1; i >= stepIndex; i--) {
         final curStep = steps[i];
-        curStep.reverse();        
+        curStep.reverse();       
+        print('reversed step $i ') ;
       }
     }    
     else

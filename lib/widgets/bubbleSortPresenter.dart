@@ -17,8 +17,7 @@ class BubbleSortPresenter extends StatefulWidget {
 class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTickerProviderStateMixin {
   
   final barsSpacing = 4.0;
-  // final bubbleSorter = BubbleSorter([112,3, 38,  74, 15, 36, 26, 27, 2, 86, 4, 19, 47, 50, 48]);
-  final bubbleSorter = BubbleSorter([112,3, 38,  74, 15,]);
+  final bubbleSorter = BubbleSorter([112,3, 38,  74, 15, 36, 26, 27, 2, 86, 4, 19, 47, 50, 48]);
   List<int> get numbers => bubbleSorter.numbers;
   List<int> _currentSelection = [];
   List<StreamSubscription> subscriptions = [];
