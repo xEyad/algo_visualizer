@@ -1,4 +1,4 @@
-# algo_visualizer
+# algo visualizer
 
 
 # references
