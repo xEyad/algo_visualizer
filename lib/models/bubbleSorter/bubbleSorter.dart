@@ -108,16 +108,17 @@ class BubbleSorter
   void runRecordedSteps()
   {
     for (var step in _swapSteps) {step.execute(); }
+    _curStepIndex = 0;
   }
 
   void undoAllSteps()
   {
     if(_swapSteps.isEmpty)
       return;
-    for (var i = _swapSteps.length-1; i >= 0 ; i--) {
-      final curStep = _swapSteps[i];
-      if(curStep is _SwapStep)
-        curStep.reverse();
+    final steps = _swapSteps.whereType<_SwapStep>().toList();
+    for (var i = steps.length-1; i >= 0 ; i--) {
+      final curStep = steps[i];
+      curStep.reverse();
     }
     _curStepIndex = 0;
   }
@@ -133,18 +134,18 @@ class BubbleSorter
     final steps = _swapSteps.whereType<_SwapStep>().toList();
     if(_curStepIndex<stepIndex)
     {
-      for (var i = _curStepIndex+1; i <= stepIndex; i++) {
+      for (var i = _curStepIndex; i < stepIndex; i++) {
         final curStep = steps[i];
         curStep.execute();        
       }
     }
     else if(_curStepIndex>stepIndex)
     {
-      for (var i = _curStepIndex; i > stepIndex; i--) {
+      for (var i = _curStepIndex-1; i >= stepIndex; i--) {
         final curStep = steps[i];
         curStep.reverse();        
       }
-    }
+    }    
     else
     {
       //nothing

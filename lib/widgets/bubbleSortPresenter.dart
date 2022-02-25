@@ -117,6 +117,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
     for (var element in animatableBarControllers) {element.reset();}
     bubbleSorter.reset();
     animationController.reset();
+    curSelectedStep = null;
     setState(() {});
     print(numbers);
   }
@@ -129,6 +130,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
 
   void onStartSort() {
     bubbleSorter.sortWithoutAnimation();
+    curSelectedStep = bubbleSorter.swapStepsNumber;
     setState(() {});
     return;
     bubbleSorter.startAnimation();
@@ -145,8 +147,8 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[barsList(),SizedBox(height: 30,), actionBtns(),],
+      mainAxisAlignment: MainAxisAlignment.center,        
+      children: <Widget>[barsList(),SizedBox(height: 30,), actionBtns(),goToStepControls()],
     );
   }
   
@@ -177,17 +179,6 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
         SizedBox(
           width: 20,
         ),
-        goToStepBtn(),
-        // ElevatedButton(
-        //   onPressed: (){
-        //     bubbleSorter.reset();
-        //     setState(() {});
-        //   },
-        //   child: Text('Super Reset'),
-        // ),
-        SizedBox(
-          width: 20,
-        ),
         ElevatedButton(
           onPressed: bubbleSorter.animationStatus == SimpleAnimationStatus.animating? null : onStartSort,
           child: Text('Start Bubble sort'),
@@ -203,12 +194,53 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
     );
   }
 
-  Widget goToStepBtn()
+  Widget goToStepControls()
   {
-    return DropdownButton(
-      value: curSelectedStep,
-      items: List.generate(bubbleSorter.swapStepsNumber, (index) => DropdownMenuItem(child: Text('${index}'),value: index,)), 
-      onChanged: onStepSelected
+    if(curSelectedStep==null)
+    {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text('Run it once first'),
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(onPressed: curSelectedStep==0?
+        null
+        :
+        (){
+          onStepSelected(0);
+        }, icon: Icon(Icons.fast_rewind)),
+
+        IconButton(onPressed: curSelectedStep==0?
+        null
+        :
+        (){
+          onStepSelected(curSelectedStep!-1);
+        }, icon: Icon(Icons.arrow_back_ios)),
+
+        DropdownButton(
+          value: curSelectedStep,
+          items: List.generate(bubbleSorter.swapStepsNumber+1, (index) => DropdownMenuItem(child: Text('${index}'),value: index,)), 
+          onChanged: onStepSelected
+        ),
+
+        IconButton(onPressed: curSelectedStep==bubbleSorter.swapStepsNumber?
+        null
+        :
+        (){
+          onStepSelected(curSelectedStep!+1);
+        }, icon: Icon(Icons.arrow_forward_ios)),
+
+        IconButton(onPressed: curSelectedStep==bubbleSorter.swapStepsNumber?
+        null
+        :
+        (){
+          onStepSelected(bubbleSorter.swapStepsNumber);
+        }, icon: Icon(Icons.fast_forward))
+      ],
     );
   }
 }
