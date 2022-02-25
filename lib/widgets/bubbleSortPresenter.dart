@@ -17,14 +17,15 @@ class BubbleSortPresenter extends StatefulWidget {
 class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTickerProviderStateMixin {
   
   final barsSpacing = 4.0;
-  final bubbleSorter = BubbleSorter([112,3, 38,  74, 15, 36, 26, 27, 2, 86, 4, 19, 47, 50, 48]);
+  // final bubbleSorter = BubbleSorter([112,3, 38,  74, 15, 36, 26, 27, 2, 86, 4, 19, 47, 50, 48]);
+  final bubbleSorter = BubbleSorter([112,3, 38,  74, 15,]);
   List<int> get numbers => bubbleSorter.numbers;
   List<int> _currentSelection = [];
   List<StreamSubscription> subscriptions = [];
   late List<AnimatableBarController> animatableBarControllers;
   late Animation<double> animation;
   late AnimationController animationController; 
-  int? curSelectedStep;
+  int? get curSelectedStep => bubbleSorter.curSwapStepIndex;
   AnimatableBarController getControllerMatchingIndex(int index)
   {
     return animatableBarControllers.firstWhere((element) => element.value ==  numbers[index]);
@@ -49,7 +50,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
         setState(() {});
       }
     });
-    
+
     animation = Tween<double>(begin: 0, end: AnimatableBar.width + barsSpacing*2).animate(animationController)
     ..addListener(() {
       if(_currentSelection.isEmpty) return;
@@ -118,7 +119,6 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
     for (var element in animatableBarControllers) {element.reset();}
     bubbleSorter.reset();
     animationController.reset();
-    curSelectedStep = null;
     setState(() {});
     print(numbers);
   }
@@ -142,7 +142,7 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
   void onStepSelected(int? stepNum)
   {
     bubbleSorter.goToStep(stepNum!);
-    setState(() {curSelectedStep=stepNum;});
+    setState(() {});
   }
 
   @override
@@ -208,14 +208,14 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        IconButton(onPressed: curSelectedStep==0?
+        IconButton(onPressed: curSelectedStep==0 || bubbleSorter.animationStatus == SimpleAnimationStatus.animating?
         null
         :
         (){
           onStepSelected(0);
         }, icon: Icon(Icons.fast_rewind)),
 
-        IconButton(onPressed: curSelectedStep==0?
+        IconButton(onPressed: curSelectedStep==0 || bubbleSorter.animationStatus == SimpleAnimationStatus.animating?
         null
         :
         (){
@@ -225,17 +225,17 @@ class _BubbleSortPresenterState extends State<BubbleSortPresenter> with SingleTi
         DropdownButton(
           value: curSelectedStep,
           items: List.generate(bubbleSorter.swapStepsNumber+1, (index) => DropdownMenuItem(child: Text('${index}'),value: index,)), 
-          onChanged: onStepSelected
+          onChanged: bubbleSorter.animationStatus == SimpleAnimationStatus.animating?null:onStepSelected
         ),
 
-        IconButton(onPressed: curSelectedStep==bubbleSorter.swapStepsNumber?
+        IconButton(onPressed: curSelectedStep==bubbleSorter.swapStepsNumber || bubbleSorter.animationStatus == SimpleAnimationStatus.animating?
         null
         :
         (){
           onStepSelected(curSelectedStep!+1);
         }, icon: Icon(Icons.arrow_forward_ios)),
 
-        IconButton(onPressed: curSelectedStep==bubbleSorter.swapStepsNumber?
+        IconButton(onPressed: curSelectedStep==bubbleSorter.swapStepsNumber || bubbleSorter.animationStatus == SimpleAnimationStatus.animating?
         null
         :
         (){
