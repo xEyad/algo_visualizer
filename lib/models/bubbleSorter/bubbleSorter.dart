@@ -33,13 +33,13 @@ class BubbleSorter
   final List<_Step> _sorterSteps = [];
   List<_Step> get _swapSteps => _sorterSteps.whereType<_SwapStep>().toList();
   int get swapStepsNumber => _swapSteps.isEmpty?0: _swapSteps.length-1;
-  int get curSwapStepIndex => _curSwapStepIndex==-1?0:_curSwapStepIndex;
+  int? get curSwapStepIndex => _curSwapStepIndex;
 
   //animation Variables
   int get animationStepSpeedInMs => 500;
   Timer? _animationTimer;
   int _curStepIndex = 0;
-  int _curSwapStepIndex = 0;
+  int? _curSwapStepIndex;
   int _lastSortedIndex;
   int get lastSortedIndex => _lastSortedIndex;
 
@@ -50,7 +50,7 @@ class BubbleSorter
       _lastSortedIndex = _numbers.length;
       sortWithoutAnimation();
       _curStepIndex = 0;
-      _curSwapStepIndex = -1;
+      _curSwapStepIndex = 0;
       _numbers = List.from(_originalNumbersList);      
     }
 
@@ -86,7 +86,10 @@ class BubbleSorter
     step.execute();
     _curStepIndex++;
     if(step is _SwapStep)
-      _curSwapStepIndex = min(_curSwapStepIndex+1,swapStepsNumber);
+    {
+      _curSwapStepIndex = min(_curSwapStepIndex!+1,swapStepsNumber);
+      print('setting _curSwapStepIndex to $_curSwapStepIndex');
+    }
   }
   
   void pauseAnimation()
@@ -107,7 +110,7 @@ class BubbleSorter
   void reset()
   {
     _lastSortedIndex = _numbers.length;
-    _curSwapStepIndex = -1; //null
+    _curSwapStepIndex = null;
     _currentSelectionStream.add([]);
     _numbers = List.from(_originalNumbersList);
     _sorterSteps.clear();
@@ -129,9 +132,9 @@ class BubbleSorter
     }
 
     final steps = _sorterSteps.whereType<_SwapStep>().toList();
-    if(curSwapStepIndex<stepIndex)
+    if(curSwapStepIndex!<stepIndex)
     {
-      for (var i = curSwapStepIndex; i < stepIndex; i++) {
+      for (var i = curSwapStepIndex!; i < stepIndex; i++) {
         final curStep = steps[i];
         curStep.execute();        
         print('executed step $i ') ;
@@ -142,14 +145,14 @@ class BubbleSorter
         print('executed step $stepIndex ');
       } 
     }
-    else if(curSwapStepIndex>stepIndex)
+    else if(curSwapStepIndex!>stepIndex)
     {
-      if(curSwapStepIndex==swapStepsNumber)
+      if(curSwapStepIndex! == swapStepsNumber)
       {
         steps.last.reverse();
-        print('reversed step $curSwapStepIndex ');
+        print('reversed step $curSwapStepIndex! ');
       }
-      for (var i = curSwapStepIndex-1; i >= stepIndex; i--) {
+      for (var i = curSwapStepIndex!-1; i >= stepIndex; i--) {
         final curStep = steps[i];
         curStep.reverse();       
         print('reversed step $i ') ;
@@ -160,7 +163,7 @@ class BubbleSorter
       //nothing
     }
     _curSwapStepIndex = stepIndex;
-    _curStepIndex = _sorterSteps.indexWhere((step) => step == _swapSteps[_curSwapStepIndex]);
+    _curStepIndex = _sorterSteps.indexWhere((step) => step == _swapSteps[_curSwapStepIndex!]);
   }
 
   void sortWithoutAnimation()
