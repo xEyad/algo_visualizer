@@ -8,6 +8,10 @@ In many cases if a developer needs to assess another developer skill, he can do 
 This technical demo shows everything that you need to asses from code lens. like readability, architecture, modularity, etc, etc
 
 # Building for web
+run the auto build bat file 
+Command: webBuildAndPublish.bat
+
+or follow the steps below:
 1. flutter build web --release --base-href /algo_visualizer/ 
 1. copy contents of build/web to docs/
 1. duplicate your index.html and rename it to 404.html
