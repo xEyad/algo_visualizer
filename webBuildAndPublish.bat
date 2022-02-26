@@ -13,8 +13,7 @@ ECHO git add and commit all with message "new web version"
 call git add .
 call git commit -m "new web version"
 
-@REM ECHO git push
-@REM call git push
+ECHO git push
+call git push
 
-@REM ECHO Congrats, everything is ready. updates should appear on this link https://xeyad.github.io/algo_visualizer within few short minutes 
-@REM PAUSE
+ECHO Congrats, everything is ready. updates should appear on this link https://xeyad.github.io/algo_visualizer within few short minutes 
